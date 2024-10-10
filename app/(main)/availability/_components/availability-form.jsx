@@ -8,6 +8,9 @@ import { Controller, useForm } from "react-hook-form";
 import { timeSlots } from "../data";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import useFetch from "@/hooks/use-fetch";
+import { updateAvailability } from "@/actions/availability";
+import { date } from "zod";
 
 export default function AvailabilityForm({ initialData }) {
   const {
@@ -22,8 +25,18 @@ export default function AvailabilityForm({ initialData }) {
     defaultValues: { ...initialData },
   });
 
+  const {
+    loading,
+    error,
+    fn:fnupdateAvailability
+  } = useFetch(updateAvailability);
+
+  const onSubmit = async (data) =>{
+    await fnupdateAvailability(data);
+  };
+
   return (
-    <form className="space-y-6">
+    <form onSubmit={handleSubmit(onSubmit)}  className="space-y-6">
       {[
         "monday",
         "tuesday",
@@ -120,9 +133,10 @@ export default function AvailabilityForm({ initialData }) {
           <span className="text-red-500 text-sm">{errors.timeGap.message}</span>
         )}
       </div>
+      {error && <div className="text-red-500 text-sm">{error?.message}</div>}
 
-      <Button type="submit">
-         Update Availability
+      <Button type="submit" disabled={loading}>
+      {loading ? "Updating..." : "Update Availability"}
       </Button>
 
     </form>
