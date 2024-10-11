@@ -40,10 +40,20 @@ export default function EventCard({ event, username, isPublic = false }) {
     }
   };
 
+  const handleCardClick = async (e) => {
+    if(e.target.tagName !== "BUTTON" && e.target.tagName !== "SVG"){
+      window?.open(
+        `${window?.location.origin}/${username}/${event.id}`,
+        "_blank"
+      );
+    } 
+  };
+
 
   return (
     <Card
       className="flex flex-col justify-between cursor-pointer"
+      onClick={handleCardClick}
     >
       <CardHeader>
         <CardTitle className="text-2xl">{event.title}</CardTitle>

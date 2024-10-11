@@ -2,7 +2,6 @@
 
 import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-import { create } from "hbs";
 
 export async function getUserAvailability() {
     const { userId } = auth();
@@ -35,7 +34,7 @@ export async function getUserAvailability() {
         "saturday",
         "sunday",
     ].forEach((day) => {
-        const dayAvailability = user.availability.day.find(
+        const dayAvailability = user.availability.days.find(
             (d) => d.day === day.toUpperCase()
         );
 
