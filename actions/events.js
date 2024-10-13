@@ -93,7 +93,6 @@ export async function deleteEvent(eventId) {
 }
 
 
-
 export async function getEventDetails(username,eventId) {
     const event = await db.event.findFirst({
       where:{
