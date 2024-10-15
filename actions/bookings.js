@@ -46,6 +46,7 @@ export async function createBooking(bookingData) {
                 createRequest:{requestId:`${event.id}-${Date.now()}`},
             },
         },
+        sendUpdates: "all",  
     });
 
     const meetLink = meetResponse.data.hangoutLink;
