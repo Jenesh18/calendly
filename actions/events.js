@@ -8,7 +8,7 @@ export async function createEvent(data) {
     const { userId } = auth();
 
     if (!userId) {
-        throw new Error("Unauthorized");
+        return { status: 401, error: 1, message: "Unauthorized" }; 
     }
 
     const validatedData = eventSchema.parse(data);
@@ -18,7 +18,7 @@ export async function createEvent(data) {
     });
 
     if (!user) {
-        throw new Error("User not found")
+        return { status: 404, error: 1, message: "User not found" }; 
     }
 
     const event = await db.event.create({
@@ -28,7 +28,7 @@ export async function createEvent(data) {
         },
     });
 
-    return event;
+    return { status: 200, error: 0, message: "Event created successfully." };
 }
 
 export async function getUserEvents() {
@@ -65,31 +65,34 @@ export async function deleteEvent(eventId) {
     const { userId } = auth();
 
     if (!userId) {
-        throw new Error("Unauthorized");
+        return { status: 401, error: 1, message: "Unauthorized" }; 
     }
 
-
     const user = await db.user.findUnique({
-        where: { clerkUserId: userId }
+        where: { clerkUserId: userId },
     });
 
     if (!user) {
-        throw new Error("User not found")
+        return { status: 404, error: 1, message: "User not found" }; 
     }
 
     const event = await db.event.findUnique({
-        where: { id: eventId }
+        where: { id: eventId },
     });
 
-    if (!event || event.userId !== user.id) {
-        throw new Error("Event not found or unauthorized");
+    if (!event) {
+        return { status: 404, error: 1, message: "Event not found." };
+    }
+
+    if (event.userId !== user.id) {
+        return { status: 401, error: 1, message: "You are not authorized to delete this event." };
     }
 
     await db.event.delete({
         where: { id: eventId },
     });
 
-    return { success: true };
+    return { status: 200, error: 0, message: "Event deleted successfully." };
 }
 
 

@@ -13,6 +13,8 @@ import useFetch from "@/hooks/use-fetch";
 import { updateUsername } from "@/actions/users";
 import { getLatestUpdates } from "@/actions/dashboard";
 import { format } from "date-fns";
+import { toast } from "react-hot-toast";
+
 
 const Dashboard = () => {
   const {user,isLoaded} = useUser();
@@ -37,13 +39,22 @@ const Dashboard = () => {
     fn: fnUpdates,
   } = useFetch(getLatestUpdates);
 
-  console.log(upcomingMeetings,"<<<<<<")
 
   useEffect(() => {
     (async () => await fnUpdates())();
   }, []);
 
-  const { loading, error, fn: fnUpdateUsername } = useFetch(updateUsername);
+  const { loading, error, fn: fnUpdateUsername, data } = useFetch(updateUsername);
+
+  useEffect(() => {
+    if (data) {
+      if (data.status == 200) {
+        toast.success(data.message || "Username updated successfully!");
+      } else {
+        toast.error(data.message || "Failed to update username.");
+      }
+    }
+  }, [data]); 
 
   const onSubmit = async (data) => {
     await fnUpdateUsername(data.username);
@@ -111,7 +122,7 @@ const Dashboard = () => {
             </Button>
           </form>
         </CardContent>
-      </Card>
+    </Card>
     </div>
   )
 }

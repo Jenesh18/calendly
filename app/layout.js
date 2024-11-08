@@ -6,6 +6,7 @@ import {
   ClerkProvider,
 } from '@clerk/nextjs'
 import CreateEventDrawer from "@/components/create-event";
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -22,7 +23,16 @@ export default function RootLayout({ children }) {
         className={inter}
       >
         <Header />
-        <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
+        <Toaster
+          position="bottom-right"  
+          toastOptions={{
+            duration: 4000, 
+            style: {
+              background: '#333',
+              color: '#fff',
+            },
+          }}
+        />        <main className="min-h-screen bg-gradient-to-b from-blue-50 to-white">
           {children}
         </main>
         <Footer />

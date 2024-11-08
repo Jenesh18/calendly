@@ -15,8 +15,8 @@ export async function updateUsername(username) {
     where: { username },
   });
 
-  if (existingUser && existingUser.id !== userId) {
-    throw new Error("Username is already taken");
+  if (existingUser && existingUser.clerkUserId !== userId) {
+    return { status: 401, error: 1, message: "Username is already taken" };
   }
 
   // Update username in database
@@ -28,7 +28,8 @@ export async function updateUsername(username) {
   await clerkClient().users.updateUser(userId,{
     username
   });
-  return {success:true}
+
+  return {status:200, error: 0, message: "Username updated successfully!"}
 }
 
 export async function getUserByUsername(username) {

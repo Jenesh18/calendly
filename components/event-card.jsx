@@ -10,10 +10,23 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import useFetch from "@/hooks/use-fetch";
 import { Link, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "react-hot-toast";
+import { useEffect } from "react";
 
 export default function EventCard({ event, username, isPublic = false }) {
   const [isCopied, setIsCopied] = useState(false);
@@ -25,30 +38,38 @@ export default function EventCard({ event, username, isPublic = false }) {
         `${window?.location.origin}/${username}/${event.id}`
       );
       setIsCopied(true);
+      toast.success("Link copied to clipboard!");
       setTimeout(() => setIsCopied(false), 2000); // Reset after 2 seconds
     } catch (err) {
-      console.error("Failed to copy: ", err);
+      toast.error("Failed to copy link!");
     }
   };
 
-  const { loading, fn: fnDeleteEvent } = useFetch(deleteEvent);
+  const { loading, fn: fnDeleteEvent , data } = useFetch(deleteEvent);
+  
+  useEffect(() => {
+    if (data) {
+      if (data.status == 200) {
+        toast.success(data.message || "Event delete successfully!");
+      } else {
+        toast.error(data.message || "Failed to delete event.");
+      }
+    }
+  }, [data]); 
 
   const handleDelete = async () => {
-    if (window?.confirm("Are you sure you want to delete this event?")) {
-      await fnDeleteEvent(event.id);
-      router.refresh();
-    }
+    await fnDeleteEvent(event.id);
+    router.refresh();
   };
 
   const handleCardClick = async (e) => {
-    if(e.target.tagName !== "BUTTON" && e.target.tagName !== "SVG"){
+    if (e.target.tagName !== "BUTTON" && e.target.tagName !== "SVG") {
       window?.open(
         `${window?.location.origin}/${username}/${event.id}`,
         "_blank"
       );
-    } 
+    }
   };
-
 
   return (
     <Card
@@ -77,14 +98,28 @@ export default function EventCard({ event, username, isPublic = false }) {
             <Link className="mr-2 h-4 w-4" />
             {isCopied ? "Copied!" : "Copy Link"}
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleDelete}
-            disabled={loading}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            {loading ? "Deleting..." : "Delete"}
-          </Button>
+
+          {/* Alert Dialog for Delete Confirmation */}
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={loading} className="flex items-center">
+                <Trash2 className="mr-2 h-4 w-4" />
+                {loading ? "Deleting..." : "Delete"}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. Deleting this event will permanently remove it from your list.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </CardFooter>
       )}
     </Card>

@@ -10,7 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import useFetch from "@/hooks/use-fetch";
 import { updateAvailability } from "@/actions/availability";
-import { date } from "zod";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 export default function AvailabilityForm({ initialData }) {
   const {
@@ -28,8 +29,19 @@ export default function AvailabilityForm({ initialData }) {
   const {
     loading,
     error,
-    fn:fnupdateAvailability
+    fn:fnupdateAvailability,
+    data
   } = useFetch(updateAvailability);
+
+  useEffect(() => {
+    if (data) {
+      if (data.status == 200) {
+        toast.success(data.message || "Availability updated successfully!");
+      } else {
+        toast.error(data.message || "Failed to update availability.");
+      }
+    }
+  }, [data]); 
 
   const onSubmit = async (data) =>{
     await fnupdateAvailability(data);

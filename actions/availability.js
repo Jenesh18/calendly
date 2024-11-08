@@ -57,7 +57,7 @@ export async function updateAvailability(data) {
     const { userId } = auth();
 
     if (!userId) {
-        throw new Error("Unauthorized");
+        return { status: 401, error: 1, message: "Unauthorized" }; 
     }
 
     const user = await db.user.findUnique({
@@ -65,52 +65,59 @@ export async function updateAvailability(data) {
         include: { availability: true },
     });
 
-    if(!user){
-      throw new Error("User not found");
+    if (!user) {
+        return { status: 404, error: 1, message: "User not found" }; 
     }
 
     const availabilityData = Object.entries(data).flatMap(
-        ([day,{isAvailable, startTime , endTime}]) =>{
-            if(isAvailable){
+        ([day, { isAvailable, startTime, endTime }]) => {
+            if (isAvailable) {
                 const baseDate = new Date().toISOString().split("T")[0];
 
-                return[
+                return [
                     {
                         day: day.toUpperCase(),
                         startTime: new Date(`${baseDate}T${startTime}:00Z`),
-                        endTime: new Date(`${baseDate}T${endTime}:00Z`)
-                    }
+                        endTime: new Date(`${baseDate}T${endTime}:00Z`),
+                    },
                 ];
             }
             return [];
         }
     );
 
-    if(user.availability){
-        await db.availability.update({
-            where:{id:user.availability.id},
-            data:{
-             timeGap : data.timeGap,
-             days:{
-                deleteMany: {},
-                create: availabilityData,
-             }
-            }
-        });
-    }else{
-        await db.availability.create({
-            data:{
-                userId: user.id,
-                timeGap: data.timeGap,
-                days:{
-                    create: availabilityData,
+    try {
+        if (user.availability) {
+            await db.availability.update({
+                where: { id: user.availability.id },
+                data: {
+                    timeGap: data.timeGap,
+                    days: {
+                        deleteMany: {},
+                        create: availabilityData,
+                    },
                 },
-            },
-        });
-    }
+            });
+        } else {
+            await db.availability.create({
+                data: {
+                    userId: user.id,
+                    timeGap: data.timeGap,
+                    days: {
+                        create: availabilityData,
+                    },
+                },
+            });
+        }
 
-    return {success : true};
+        return { status: 200, error: 0, message: "Availability updated successfully" }; 
+
+    } catch (error) {
+        console.error("Error updating availability:", error);
+        return { status: 500, error: 1, message: "An error occurred while updating availability" }; 
+    }
 }
+
 
 export async function getEventAvailability(eventId) {
 

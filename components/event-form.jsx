@@ -16,6 +16,8 @@ import { eventSchema } from "@/app/lib/validators";
 import { createEvent } from "@/actions/events";
 import { useRouter } from "next/navigation";
 import useFetch from "@/hooks/use-fetch";
+import { useEffect } from "react";
+import toast from "react-hot-toast";
 
 const EventForm = ({ onSubmitForm, initialData = {} }) => {
   const router = useRouter();
@@ -35,7 +37,18 @@ const EventForm = ({ onSubmitForm, initialData = {} }) => {
     },
   });
 
-  const { loading, error, fn: fnCreateEvent } = useFetch(createEvent);
+  const { loading, error, fn: fnCreateEvent, data} = useFetch(createEvent);
+
+  useEffect(() => {
+    if (data) {
+      if (data.status == 200) {
+        toast.success(data.message || "Event created successfully!");
+      } else {
+        toast.error(data.message || "Failed to creat event.");
+      }
+    }
+  }, [data]); 
+
 
   const onSubmit = async (data) => {
     await fnCreateEvent(data);
